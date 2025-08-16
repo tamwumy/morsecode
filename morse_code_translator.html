@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Morse Code Translator</title>
+<style>
+    body {
+        font-family: "Courier New", monospace;
+        background: #121212;
+        color: #e0e0e0;
+        padding: 20px;
+    }
+    h1 { text-align: center; color: #ffffff; }
+    .container {
+        max-width: 900px;
+        margin: auto;
+        background: #1e1e1e;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(255,255,255,0.1);
+    }
+    textarea {
+        width: 100%;
+        padding: 8px;
+        margin: 5px 0;
+        font-size: 16px;
+        background: #2a2a2a;
+        color: #ffffff;
+        border: 1px solid #444;
+        border-radius: 5px;
+        font-family: "Courier New", monospace;
+    }
+    button {
+        padding: 10px 15px;
+        margin: 5px;
+        font-size: 16px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        color: white;
+        background: #555;
+        font-family: "Courier New", monospace;
+    }
+    #morseOutput {
+        font-size: 18px;
+        background: #2a2a2a;
+        padding: 10px;
+        border-radius: 5px;
+        border: 1px solid #444;
+        min-height: 40px;
+        font-family: "Courier New", monospace;
+    }
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.7);
+        justify-content: center;
+        align-items: center;
+    }
+    .modal-content {
+        background: #2a2a2a;
+        padding: 20px;
+        border-radius: 10px;
+        color: #ffffff;
+        border: 1px solid #444;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: center;
+        font-size: 12px;
+    }
+    th, td {
+        padding: 4px;
+        border: 1px solid #444;
+    }
+</style>
+</head>
+<body>
+<div class="container">
+    <h1>Morse Code Translator</h1>
+    <button id="morseTableBtn">Morse Code Chart</button>
+    <button id="clearBtn">Clear</button>
+    <h3>Real-time Translator</h3>
+    <textarea id="mainInput" placeholder="Enter English or Morse code..."></textarea>
+    <div id="morseOutput"></div>
+</div>
+<div class="modal" id="morseModal">
+    <div class="modal-content">
+        <h3>Morse Code Chart</h3>
+        <table>
+            <tr><th colspan="10">Numbers</th></tr>
+            <tr>
+                <td>0<br>-----</td><td>1<br>.----</td><td>2<br>..---</td><td>3<br>...--</td><td>4<br>....-</td>
+                <td>5<br>.....</td><td>6<br>-....</td><td>7<br>--...</td><td>8<br>---..</td><td>9<br>----.</td>
+            </tr>
+            <tr><th colspan="13">Letters</th></tr>
+            <tr>
+                <td>A<br>.-</td><td>B<br>-...</td><td>C<br>-.-.</td><td>D<br>-..</td><td>E<br>.</td><td>F<br>..-.</td>
+                <td>G<br>--.</td><td>H<br>....</td><td>I<br>..</td><td>J<br>.---</td><td>K<br>-.-</td><td>L<br>.-..</td><td>M<br>--</td>
+            </tr>
+            <tr>
+                <td>N<br>-.</td><td>O<br>---</td><td>P<br>.--.</td><td>Q<br>--.-</td><td>R<br>.-.</td><td>S<br>...</td>
+                <td>T<br>-</td><td>U<br>..-</td><td>V<br>...-</td><td>W<br>.--</td><td>X<br>-..-</td><td>Y<br>-.--</td><td>Z<br>--..</td>
+            </tr>
+        </table>
+        <br><br>
+        <button onclick="document.getElementById('morseModal').style.display='none'">Close</button>
+    </div>
+</div>
+<script>
+const morseCodeMap = {
+    'A': '.-', 'B': '-...', 'C': '-.-.', 'D': '-..', 'E': '.',
+    'F': '..-.', 'G': '--.', 'H': '....', 'I': '..', 'J': '.---',
+    'K': '-.-', 'L': '.-..', 'M': '--', 'N': '-.', 'O': '---',
+    'P': '.--.', 'Q': '--.-', 'R': '.-.', 'S': '...', 'T': '-',
+    'U': '..-', 'V': '...-', 'W': '.--', 'X': '-..-', 'Y': '-.--', 'Z': '--..',
+    '1': '.----', '2': '..---', '3': '...--', '4': '....-', '5': '.....',
+    '6': '-....', '7': '--...', '8': '---..', '9': '----.', '0': '-----',
+    ' ': '/', '/': '/'
+};
+const reverseMap = Object.fromEntries(Object.entries(morseCodeMap).map(([k,v]) => [v,k]));
+
+document.getElementById('morseTableBtn').onclick = () => {
+    document.getElementById('morseModal').style.display = 'flex';
+};
+
+document.getElementById('clearBtn').onclick = () => {
+    document.getElementById('mainInput').value = '';
+    document.getElementById('morseOutput').innerText = '';
+};
+
+function morseToEnglish(morse) {
+    return morse.trim().split(' / ').map(
+        word => word.trim().split(' ').map(code => reverseMap[code] || '').join('')
+    ).join(' ');
+}
+function englishToMorse(text) {
+    return text.toUpperCase().split(' ').map(
+        word => word.split('').map(ch => morseCodeMap[ch] || '').join(' ')
+    ).join(' / ');
+}
+const inputArea = document.getElementById('mainInput');
+inputArea.addEventListener('input', () => {
+    const val = inputArea.value.trim();
+    if (/^[.\-/ ]+$/.test(val)) {
+        document.getElementById('morseOutput').innerText = morseToEnglish(val);
+    } else {
+        document.getElementById('morseOutput').innerText = englishToMorse(val);
+    }
+});
+</script>
+</body>
+</html>
